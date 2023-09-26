@@ -83,7 +83,7 @@ bool test1(){
         flag = false;
     }
     item = List_next(list);
-       if (item != NULL || list->outOfBounds != 1){
+    if (item != NULL || list->outOfBounds != 1){
         flag = false;
     }
 
@@ -92,8 +92,26 @@ bool test1(){
         flag = false;
     }
 
+    for (int i = 0; i < 7; i++){
+        item = List_prev(list);
+    }
+    if (*(int*)item != 11 || *(int*)(list->current->item) != 11){
+        flag = false;
+    }
+
+    item = List_prev(list);
+    if (item != NULL || list->outOfBounds != 0){
+        flag = false;
+    }
+
+    item = List_next(list);
+    if (*(int*)item != 11 || *(int*)(list->current->item) != 11){
+        flag = false;
+    }
+
     if (flag == true){
         printf("List_next ok\n");
+        printf("List_prev ok\n");
     }
 
 
@@ -104,6 +122,10 @@ bool test1(){
         printf("test1 passed");
     }
     return flag;
+}
+
+bool test2(){
+    
 }
 
 int main() {

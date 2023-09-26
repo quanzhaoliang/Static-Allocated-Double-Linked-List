@@ -58,7 +58,7 @@ void List_free(List* pList, FREE_FN pItemFreeFn){
     pList->tail = NULL;
     pList->current = NULL;
     pList->size = 0;
-    pList->outOfBounds = -1;
+    pList->outOfBounds = LIST_OOB_START;
     pList->next = freeHeadPool;
 }
 
