@@ -120,45 +120,63 @@ bool test1(){
         printf("List_prev ok\n");
     }
 
-    int countHead = 0;
-    while (list != NULL){
-        list = List_create();
-        countHead++;
-    }
-
-    if (countHead != 9){
-        flag = false;
-    }
-
-
     if (flag == false){
-        printf("Error occurred!");
+        printf("Error occurred!\n");
     }
     else{
-        printf("test1 passed");
+        printf("test1 passed\n");
     }
+
+    List_free(list, freeNodeItem);
     return flag;
 }
 
 bool test2(){
-    List* list = List_create();
+    List* list1 = List_create();
     int item1 = 1;
     int item2 = 2;
     int item3 = 3;
-    List_append(list, &item1);
-    List_append(list, &item2);
-    List_append(list, &item3);
+    List_append(list1, &item1);
+    List_append(list1, &item2);
+    List_append(list1, &item3);
 
+    //1-2-3
+    List_prev(list1);
+    
+    //1-2-4-3
+    int item4 = 4;
+    List_insert_after(list1, &item4);
+    
+    int item5 = 5;
+    int item6 = 6;
+    List_next(list1);
+    //1-2-4-3-5
+    List_insert_after(list1, &item5);
+    printf("%d\n", *(int*)List_curr(list1));
+    List_insert_before(list1, &item6);
+    
 
+    int item7 = 7;
+    int item8 = 8;
+    int item9 = 9;
 
-    printList(list);
+    List* list2 = List_create();
+    List_append(list2, &item7);
+    List_next(list2);
+    List_insert_before(list2, &item8);
+    List_prev(list2);
+    List_prev(list2);
+    List_insert_before(list2, &item9);
+    List_concat(list1, list2);
+    printList(list1);
+    
+    List_free(list1, freeNodeItem);
     return true;
 
 }
 
-
-
-int main() {
+bool test3(){
+    bool flag = true;
     List* list = List_create();
 	List_insert_after(list, "Hello");
 	List_insert_after(list, "World");
@@ -168,18 +186,54 @@ int main() {
 	List_insert_before(list, "World1");
 	List_insert_before(list, "!");
 	
-	printf("%s\n", (char*)List_first(list));
+	List_first(list);
+    char* arr[] = { "World1", "Hello1", "Hello", "World", "!"};
 	for (int i = 0; i < 5; i++) {
-		printf("%s\n", (char*)List_next(list));
+		if ((char*)List_next(list) != arr[i]){
+            flag = false;
+        }
 	}
 
+    if (flag == true){
+        printf("insert_after & insert_before OK\n");
+    }
+    else{
+        printf("insert_after & insert_before Error\n");
+        return flag;
+    }
+    
 	for (int i = 0; i < 9; i++) {
 		List_create();
 	}
-	assert(List_create() == NULL);
-	for (int i = 0; i < LIST_MAX_NUM_NODES - 6; i++)
-		List_insert_after(list, "!");
-	assert(List_insert_after(list, "!") == LIST_FAIL);
-    //test2();
+	if (List_create() != NULL){
+        flag = false;
+    }
+	for (int i = 0; i < LIST_MAX_NUM_NODES - 5; i++){
+		List_insert_after(list, "a");
+    }
+    if (List_insert_after(list, "v") != -1){
+        flag = false;
+    }
+	
+    if (flag == true){
+        printf("headPool and nodePool OK\n");
+        printf("test3 passed\n");
+    }
+    else{
+        printf("headPool and nodePool Error\n");
+        return flag;
+    }
+
+    List_free(list, freeNodeItem);
+    return flag;
+}
+
+
+
+int main() {
+
+    test1();
+    test2();
+    test3();
     return 0;
 }

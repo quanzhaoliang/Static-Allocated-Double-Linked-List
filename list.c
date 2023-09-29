@@ -155,32 +155,39 @@ int List_insert_after(List* pList, void* pItem){
 
     newNode->item = pItem;
 
-  if (pList->current == NULL || pList->outOfBounds == LIST_OOB_END) {
+  if (pList->current == NULL) {
         if (pList->tail == NULL) {
             // List is empty
             pList->head = newNode;
             pList->tail = newNode;
         } else {
-            // Insert at the end
-            newNode->prev = pList->tail;
-            pList->tail->next = newNode;
-            pList->tail = newNode;
+            if (pList->outOfBounds == LIST_OOB_START){
+                // Insert at the beginning
+                newNode->next = pList->head;
+                pList->head->prev = newNode;
+                pList->head = newNode;
+            }
+            else{
+               // Insert at the end
+                newNode->prev = pList->tail;
+                pList->tail->next = newNode;
+                pList->tail = newNode; 
+            }
         }
-    } else {
+ } else {
         // Insert after current
-        newNode->next = pList->current->next;
-        newNode->prev = pList->current;
-        if (pList->current->next) {
-            pList->current->next->prev = newNode;
-        } else {
-            // Updating tail if inserting at the end
-            pList->tail = newNode;
-        }
-        pList->current->next = newNode;
+    newNode->next = pList->current->next;
+    newNode->prev = pList->current;
+    if (pList->current->next) {
+        pList->current->next->prev = newNode;
+    } else {
+        // Updating tail if inserting at the end
+        pList->tail = newNode;
     }
+    pList->current->next = newNode;
+}
 
     pList->current = newNode;
-    pList->outOfBounds = 0;
     pList->size++;
     return 0;
 }
@@ -195,18 +202,27 @@ int List_insert_before(List* pList, void* pItem) {
     newNode->item = pItem;
 
        // insert ot empty list
-   if (pList->current == NULL || pList->outOfBounds == LIST_OOB_START) {
+   if (pList->current == NULL) {
         if (pList->head == NULL) {
             // List is empty
             pList->head = newNode;
             pList->tail = newNode;
         } else {
-            // Insert at the beginning
-            newNode->next = pList->head;
-            pList->head->prev = newNode;
-            pList->head = newNode;
+            if (pList->outOfBounds == LIST_OOB_START){
+                // Insert at the beginning
+                newNode->next = pList->head;
+                pList->head->prev = newNode;
+                pList->head = newNode;
+            }
+            else{
+               // Insert at the end
+                newNode->prev = pList->tail;
+                pList->tail->next = newNode;
+                pList->tail = newNode; 
+            }
         }
-    } else {
+    } 
+    else {
         // Insert before current
         newNode->next = pList->current;
         newNode->prev = pList->current->prev;
@@ -220,7 +236,6 @@ int List_insert_before(List* pList, void* pItem) {
     }
 
     pList->current = newNode;
-    pList->outOfBounds = 0;
     pList->size++;
     return 0;
 }
@@ -364,6 +379,12 @@ void List_concat(List* pList1, List* pList2){
     pList2->head->prev = pList1->tail;
     pList1->tail = pList2->tail;
     pList1->size += pList2->size;
+
+    pList2->head = NULL;
+    pList2->tail = NULL;
+    pList2->current = pList1->current;
+    pList2->outOfBounds = LIST_OOB_START;
+    pList2->size = 0;
 
     pList2->next = freeHeadPool;
     freeHeadPool = pList2;
