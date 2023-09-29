@@ -1,6 +1,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "list.h"
+#include <assert.h>
+
+void freeNodeItem(void* item){
+    item = NULL;
+}
+
 
 void printList(List* pList){
     Node* current;
@@ -114,6 +120,16 @@ bool test1(){
         printf("List_prev ok\n");
     }
 
+    int countHead = 0;
+    while (list != NULL){
+        list = List_create();
+        countHead++;
+    }
+
+    if (countHead != 9){
+        flag = false;
+    }
+
 
     if (flag == false){
         printf("Error occurred!");
@@ -125,10 +141,45 @@ bool test1(){
 }
 
 bool test2(){
-    
+    List* list = List_create();
+    int item1 = 1;
+    int item2 = 2;
+    int item3 = 3;
+    List_append(list, &item1);
+    List_append(list, &item2);
+    List_append(list, &item3);
+
+
+
+    printList(list);
+    return true;
+
 }
 
+
+
 int main() {
-    test1();
+    List* list = List_create();
+	List_insert_after(list, "Hello");
+	List_insert_after(list, "World");
+	List_insert_after(list, "!");
+	List_first(list);
+	List_insert_before(list, "Hello1");
+	List_insert_before(list, "World1");
+	List_insert_before(list, "!");
+	
+	printf("%s\n", (char*)List_first(list));
+	for (int i = 0; i < 5; i++) {
+		printf("%s\n", (char*)List_next(list));
+	}
+
+	for (int i = 0; i < 9; i++) {
+		List_create();
+	}
+	assert(List_create() == NULL);
+	for (int i = 0; i < LIST_MAX_NUM_NODES - 6; i++)
+		List_insert_after(list, "!");
+	assert(List_insert_after(list, "!") == LIST_FAIL);
+    //test2();
     return 0;
 }

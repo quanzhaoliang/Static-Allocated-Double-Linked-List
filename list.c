@@ -32,11 +32,9 @@ void freeNode(Node* node){
     node->next = NULL;
     node->prev = NULL;
     node->nextFree = freeNodePool;
+    freeNodePool = node;
 }
 
-void freeNodeItem(void* item){
-    item = NULL;
-}
 
 
 // Delete pList. pItemFreeFn is a pointer to a routine that frees an item. 
@@ -60,6 +58,7 @@ void List_free(List* pList, FREE_FN pItemFreeFn){
     pList->size = 0;
     pList->outOfBounds = LIST_OOB_START;
     pList->next = freeHeadPool;
+    freeHeadPool = pList;
 }
 
 List* List_create() {
@@ -67,6 +66,9 @@ List* List_create() {
     
     // Get a free list head from the pool
     List* new_list = freeHeadPool;
+    if (new_list == NULL){
+        return NULL;
+    }
     freeHeadPool = freeHeadPool->next;
 
     // Initialize the new list
@@ -153,38 +155,32 @@ int List_insert_after(List* pList, void* pItem){
 
     newNode->item = pItem;
 
-    // insert ot empty list
-    if (pList->size == 0){
-        pList->head = newNode;
-        pList->tail = newNode;
-    }
-
-    //if current pointer is out of bound
-    if (pList->current == NULL) {
-        if (pList->outOfBounds == LIST_OOB_START) {
-            // insert to head
-            pList->head->prev = newNode;
-            newNode->next = pList->head;
+  if (pList->current == NULL || pList->outOfBounds == LIST_OOB_END) {
+        if (pList->tail == NULL) {
+            // List is empty
             pList->head = newNode;
+            pList->tail = newNode;
         } else {
-            // insert to tail
-            pList->tail->next = newNode;
+            // Insert at the end
             newNode->prev = pList->tail;
+            pList->tail->next = newNode;
             pList->tail = newNode;
         }
-    } 
-    
-    else {
-        // insert after current
+    } else {
+        // Insert after current
         newNode->next = pList->current->next;
         newNode->prev = pList->current;
-        pList->current->next = newNode;
-        if (newNode->next != NULL) {
-            newNode->next->prev = newNode;
+        if (pList->current->next) {
+            pList->current->next->prev = newNode;
+        } else {
+            // Updating tail if inserting at the end
+            pList->tail = newNode;
         }
+        pList->current->next = newNode;
     }
 
     pList->current = newNode;
+    pList->outOfBounds = 0;
     pList->size++;
     return 0;
 }
@@ -199,37 +195,32 @@ int List_insert_before(List* pList, void* pItem) {
     newNode->item = pItem;
 
        // insert ot empty list
-    if (pList->size == 0){
-        pList->head = newNode;
-        pList->tail = newNode;
-    }
-
-    //if current pointer is out of bound
-    if (pList->current == NULL) {
-        if (pList->outOfBounds == LIST_OOB_START) {
-            // insert to head
-            pList->head->prev = newNode;
-            newNode->next = pList->head;
+   if (pList->current == NULL || pList->outOfBounds == LIST_OOB_START) {
+        if (pList->head == NULL) {
+            // List is empty
             pList->head = newNode;
-        } else {
-            // insert to tail
-            pList->tail->next = newNode;
-            newNode->prev = pList->tail;
             pList->tail = newNode;
+        } else {
+            // Insert at the beginning
+            newNode->next = pList->head;
+            pList->head->prev = newNode;
+            pList->head = newNode;
         }
-    } 
-    
-    else {
-        // insert before current
-        newNode->prev = pList->current->prev;
+    } else {
+        // Insert before current
         newNode->next = pList->current;
-        pList->current->prev = newNode;
-        if (newNode->prev != NULL) {
-            newNode->prev->next = newNode;
+        newNode->prev = pList->current->prev;
+        if (pList->current->prev) {
+            pList->current->prev->next = newNode;
+        } else {
+            // Updating head if inserting at the beginning
+            pList->head = newNode;
         }
+        pList->current->prev = newNode;
     }
 
     pList->current = newNode;
+    pList->outOfBounds = 0;
     pList->size++;
     return 0;
 }
@@ -374,7 +365,8 @@ void List_concat(List* pList1, List* pList2){
     pList1->tail = pList2->tail;
     pList1->size += pList2->size;
 
-    List_free(pList2, freeNodeItem);
+    pList2->next = freeHeadPool;
+    freeHeadPool = pList2;
 }
 
 // Search pList, starting at the current item, until the end is reached or a match is found. 
@@ -390,9 +382,7 @@ void List_concat(List* pList1, List* pList2){
 // If the current pointer is before the start of the pList, then start searching from
 // the first node in the list (if any).
 bool comparator(void* pItem, void* pComparisonArg){
-    int* item = (int*)pItem;
-    int* target = (int*)pComparisonArg;
-    return (*item == *target);
+    return (pItem== pComparisonArg);
 }
 void* List_search(List* pList, COMPARATOR_FN pComparator, void* pComparisonArg){
     assert(pList != NULL);
