@@ -7,6 +7,12 @@ void freeNodeItem(void* item){
     item = NULL;
 }
 
+bool comparatorChar(void* pItem, void* pComparisonArg){
+    char* item1 = (char*)pItem;
+    char* item2 = (char*)pComparisonArg;
+    return (*item1 == *item2);
+}
+
 
 void printList(List* pList){
     Node* current;
@@ -63,6 +69,7 @@ bool test1(){
     if (flag == true){
         printf("append and prepend ok\n");
     }
+
     
     //test List_first
     void* pointerFirst = List_first(list);
@@ -132,6 +139,7 @@ bool test1(){
 }
 
 bool test2(){
+    bool flag = true;
     List* list1 = List_create();
     int item1 = 1;
     int item2 = 2;
@@ -152,7 +160,6 @@ bool test2(){
     List_next(list1);
     //1-2-4-3-5
     List_insert_after(list1, &item5);
-    printf("%d\n", *(int*)List_curr(list1));
     List_insert_before(list1, &item6);
     
 
@@ -168,7 +175,24 @@ bool test2(){
     List_prev(list2);
     List_insert_before(list2, &item9);
     List_concat(list1, list2);
-    printList(list1);
+
+    int arr[9] = {1,2,4,3,6,5,9,7,8};
+    Node* current;
+    int i = 0;
+    for (current = list1->head; current != NULL ; current = current->next ){
+        if (*(int*)(current->item) != arr[i]){
+            flag = false;
+        }
+        i++;
+    }
+    if (flag == true){
+        printf("List_concat ok\n");
+        printf("test2 passed\n");
+    }
+    else{
+        printf("List_concat Error\n");
+        printf("test2 Error\n");
+    }
     
     List_free(list1, freeNodeItem);
     return true;
@@ -178,16 +202,16 @@ bool test2(){
 bool test3(){
     bool flag = true;
     List* list = List_create();
-	List_insert_after(list, "Hello");
-	List_insert_after(list, "World");
-	List_insert_after(list, "!");
+	List_insert_after(list, "Who");
+	List_insert_after(list, "are");
+	List_insert_after(list, "you");
 	List_first(list);
-	List_insert_before(list, "Hello1");
-	List_insert_before(list, "World1");
 	List_insert_before(list, "!");
+	List_insert_before(list, "Liang");
+	List_insert_before(list, "Sheldon");
 	
 	List_first(list);
-    char* arr[] = { "World1", "Hello1", "Hello", "World", "!"};
+    char* arr[] = { "Liang", "!", "Who", "are", "you"};
 	for (int i = 0; i < 5; i++) {
 		if ((char*)List_next(list) != arr[i]){
             flag = false;
@@ -228,12 +252,111 @@ bool test3(){
     return flag;
 }
 
+bool test4(){
+    bool flag = true;
+    List* list = List_create();
+    List_append(list, "W");
+    List_append(list, "O");
+    List_append(list, "R");
+    List_append(list, "L");
+    List_append(list, "D");
+    List_last(list);
+    List_next(list);
+    List_prepend(list, "H");
+    List_insert_after(list, "E");
+    List_insert_after(list, "L");
+    List_insert_after(list, "L");
+    List_insert_after(list, "O");
+   // H-E-L-L-O-W-O-R-L-D
+
+    printf("\n");
+    List_first(list);
+    List_prev(list);
+    List_remove(list);
+
+    List_next(list);
+    List_next(list);
+    List_next(list);
+    List_remove(list);
+    List_remove(list);
+    List_remove(list);
+    List_remove(list);
+    List_remove(list);
+    List_trim(list);
+    List_trim(list);
+    //H-E-R
+    
+    char* arr[] = {"H", "E", "R"};
+    Node* current;
+    int i = 0;
+    for (current = list->head; current != NULL ; current = current->next ){
+        if ((char*)(current->item) != arr[i]){
+            flag = false;
+        }
+        i++;
+    }
+   
+    if (flag == true){
+        printf("trim and remove OK\n");
+        printf("test4 passed\n");
+    }
+    else{
+        printf("trim and remove Error\n");
+        printf("test4 Error\n");   
+    }
+
+    List_free(list, freeNodeItem);
+    return flag;
+}
+
+bool test5(){   
+
+    bool flag = true;
+    List* list = List_create();
+
+    List_append(list, "W");
+    List_append(list, "O");
+    List_append(list, "R");
+    List_append(list, "L");
+    List_append(list, "D");
+    List_last(list);
+    List_next(list);
+    List_prepend(list, "H");
+    List_insert_after(list, "E");
+    List_insert_after(list, "L");
+    List_insert_after(list, "L");
+    List_insert_after(list, "O");
+   // H-E-L-L-O-W-O-R-L-D
+
+    List_first(list);
+    List_prev(list);
+    bool flag1 = List_search(list, comparatorChar, "R");
+    bool flag2 = List_search(list, comparatorChar, "H");
+    if (flag1 == true && flag2 == false && list->outOfBounds == 1){
+        printf("List_search OK\n");
+        printf("test5 passed\n");
+    }
+    else{
+        printf("List_search Error\n");
+        printf("test5 Error\n");
+    }
+
+    List_free(list, freeNodeItem);
+    return flag;
+}
+
 
 
 int main() {
 
     test1();
+    printf("\n");
     test2();
+    printf("\n");
     test3();
+    printf("\n");
+    test4();
+    printf("\n");
+    test5();
     return 0;
 }

@@ -293,50 +293,34 @@ int List_prepend(List* pList, void* pItem) {
 // Return current item and take it out of pList. Make the next item the current one.
 // If the current pointer is before the start of the pList, or beyond the end of the pList,
 // then do not change the pList and return NULL.
-void* List_remove(List* pList){
+void* List_remove(List* pList) {
     assert(pList != NULL);
 
-    // If current is in bound
-    if (pList -> current != NULL){
-        Node* removedNode = pList->current;
-        void* removedItem = removedNode->item;
-
-        if (pList->size == 1){
-            pList->head = NULL;
-            pList->tail = NULL;
-            pList->current = NULL;
-            pList->outOfBounds = LIST_OOB_END;
-        }
-        else{
-            //if the removed node is not the head or tail of the list
-            if (removedNode->prev != NULL || removedNode->next != NULL){
-                pList->current = pList->current->next;
-                removedNode->prev->next = removedNode->next;
-                removedNode->next->prev = removedNode->prev;
-            }
-        
-            else{
-                //if the removed node is the head of the list
-                if (removedNode->prev == NULL){
-                    pList->head = removedNode->next;
-                    pList->head->prev = NULL;
-                    pList->current = pList->head;
-                }
-                //if the removed node is the tail of the list
-                else{
-                    pList->tail = removedNode->prev;
-                    removedNode->next = NULL;
-                    pList->current = NULL;
-                    pList->outOfBounds = LIST_OOB_END;
-                }
-            }
-        }
-
-        pList->size--;
-        freeNode(removedNode);
-        return removedItem;
+    if (pList->current == NULL || pList->head == NULL) {
+        return NULL; // Current pointer is before start or list is empty
     }
-    return NULL;
+
+    Node* removedNode = pList->current;
+    void* removedItem = removedNode->item;
+
+    if (pList->current->prev) {
+        pList->current->prev->next = pList->current->next;
+    } else {
+        // Removing the first node
+        pList->head = pList->current->next;
+    }
+
+    if (pList->current->next) {
+        pList->current->next->prev = pList->current->prev;
+    } else {
+        // Removing the last node
+        pList->tail = pList->current->prev;
+    }
+
+    pList->current = removedNode->next;
+    freeNode(removedNode);
+    pList->size--;
+    return removedItem;
 }
 
 // Return last item and take it out of pList. Make the new last item the current one.
@@ -382,7 +366,7 @@ void List_concat(List* pList1, List* pList2){
 
     pList2->head = NULL;
     pList2->tail = NULL;
-    pList2->current = pList1->current;
+    pList2->current = NULL;
     pList2->outOfBounds = LIST_OOB_START;
     pList2->size = 0;
 
@@ -402,25 +386,25 @@ void List_concat(List* pList1, List* pList2){
 // 
 // If the current pointer is before the start of the pList, then start searching from
 // the first node in the list (if any).
-bool comparator(void* pItem, void* pComparisonArg){
-    return (pItem== pComparisonArg);
-}
 void* List_search(List* pList, COMPARATOR_FN pComparator, void* pComparisonArg){
-    assert(pList != NULL);
+    assert(pList != NULL && pComparator != NULL);
 
     Node* currentNode = pList->current;
-    if (pList->outOfBounds == LIST_OOB_START){
+
+    // If current is before start or beyond the end, start from the beginning
+    if (currentNode == NULL && pList->outOfBounds == LIST_OOB_START) {
         currentNode = pList->head;
     }
 
-    while (currentNode != NULL)
-    {
-        if (pComparator(currentNode->item, pComparisonArg)){
+    while (currentNode != NULL) {
+        if (pComparator(currentNode->item, pComparisonArg)) {
             pList->current = currentNode;
             return currentNode->item;
         }
         currentNode = currentNode->next;
     }
+
+    // No match found, set current beyond the end
     pList->current = NULL;
     pList->outOfBounds = LIST_OOB_END;
     return NULL;
